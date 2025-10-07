@@ -135,6 +135,36 @@ class Brick {
     moveDown() { this.rowPos++; }
     moveLeft() { this.colPos--; }
     moveRight() { this.colPos++; }
+
+    rotate() {
+        const N = this.layout.length;
+        const rotated = Array.from({length: N}, () => Array(N).fill(7));
+        for (let row = 0; row < N; row++) {
+            for (let col = 0; col < N; col++) {
+                rotated[col][N - 1 - row] = brick.layout[row][col];
+            }
+        }
+    }
+}
+
+function canRotate(brick, board) {
+    const N = brick.layout.length;
+    const rotated = Array.from({length: N}, () => Array(N).fill(white_color_Id));
+    for (let row = 0; row < N; row++) {
+        for (let col = 0; col < N; col++) {
+            rotated[col][N - 1 - row] = brick.layout[row][col];
+        }
+    }
+    for (let row = 0; row < N; row++) {
+        for (let col = 0; col < N; col++) {
+            if (rotated[row][col] === white_color_Id) continue;
+            const newX = brick.colPos + col;
+            const newY = brick.rowPos + row;
+            if (newX < 0 || newX >= cols || newY >= rows) return false;
+            if (board.grid[newY][newX] !== white_color_Id) return false;
+        }
+    }
+    return true;
 }
 
 const board = new Board(ctx);
@@ -198,7 +228,18 @@ document.addEventListener('keydown', (e) => {
     else if (e.key === 'ArrowDown') {
         if (!board.collision(brick)) brick.moveDown();
     }
-
+    else if (e.key === 'ArrowUp') {
+        if (canRotate(brick, board)) {
+            brick.rotate();
+        }
+    }
     drawGame();
 });
 
+canvas.addEventListener('click', (e) => {
+    if (!isPlaying || !brick) return;
+    if (canRotate(brick, board)) {
+        brick.rotate();
+        drawGame();
+    }
+})

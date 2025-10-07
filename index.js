@@ -13,8 +13,44 @@ const colorMapping = [
 ];
 
 const brickLayout = [
-
-]
+    [
+        [7,7,7],
+        [0,0,7],
+        [7,0,0],
+    ],
+    [
+        [7,7,7,7],
+        [1,1,1,1],
+        [7,7,7,7],
+        [7,7,7,7],
+    ],
+    [
+        [7,7,7],
+        [2,2,2],
+        [7,7,2],
+    ],
+    [
+        [7,7,7],
+        [3,3,3],
+        [3,7,7],
+    ],
+    [
+        [7,7,7,7],
+        [7,4,4,7],
+        [7,4,4,7],
+        [7,7,7,7],
+    ],
+    [
+        [7,7,7],
+        [7,5,5],
+        [5,5,7],
+    ],
+    [
+        [7,7,7],
+        [6,6,6],
+        [7,6,7],
+    ]
+];
 
 const white_color_Id = 7;
 
@@ -26,7 +62,7 @@ ctx.canvas.height = rows * blockSize;
 class Board {
     constructor(ctx) {
         this.ctx = ctx;
-        this.grid = this.generateBoard(); // ✅ tạo grid khi khởi tạo
+        this.grid = this.generateBoard();
     }
 
     generateBoard() {
@@ -52,8 +88,39 @@ class Board {
 class Brick {
     constructor(id) {
         this.id = id;
+        this.layout = brickLayout[id];
+        this.colPos = 3;
+        this.rowPos = 0;
+    }
+
+    draw(ctx) {
+        for (let row = 0; row < this.layout.length; row++) {
+            for (let col = 0; col < this.layout[row].length; col++) {
+                const colorId = this.layout[row][col];
+                if (colorId !== white_color_Id) {
+                    ctx.fillStyle = colorMapping[colorId];
+                    ctx.fillRect(
+                        (this.colPos + col) * blockSize,
+                        (this.rowPos + row) * blockSize,
+                        blockSize,
+                        blockSize
+                    );
+                    ctx.strokeStyle = 'black';
+                    ctx.strokeRect(
+                        (this.colPos + col) * blockSize,
+                        (this.rowPos + row) * blockSize,
+                        blockSize,
+                        blockSize
+                    );
+                }
+            }
+        }
     }
 }
 
 const board = new Board(ctx);
 board.drawBoard();
+
+const randomId = Math.floor(Math.random() * brickLayout.length);
+const brick = new Brick(randomId);
+brick.draw(ctx);

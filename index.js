@@ -75,6 +75,29 @@ class Board {
             }
         }
     }
+    merge(brick) {
+        brick.layout.forEach((r, rowIdx) => {
+            r.forEach((value, colIdx) => {
+                if (value !== white_color_Id) {
+                    this.grid[brick.rowPos + rowIdx][brick.colPos + colIdx] = value;
+                }
+            });
+        });
+    }
+    collision(brick)
+    {
+        for (let row = 0; row < brick.layout.length; row++) {
+            for (let col = 0; col < brick.layout[row].length; col++) {
+                if (brick.layout[row][col] === white_color_Id) continue;
+
+                const newY = brick.rowPos + row + 1;
+                const newX = brick.colPos + col;
+                if (newY >= rows) return true;
+                if (this.grid[newY][newX] !== white_color_Id) return true;
+            }
+        }
+        return false;
+    }
 }
 
 class Brick {
@@ -110,8 +133,8 @@ class Brick {
     }
 
     moveDown() { this.rowPos++; }
-    moveLeft() { if (this.colPos > 0) this.colPos--; }
-    moveRight() { if (this.colPos < cols - 3) this.colPos++; }
+    moveLeft() { this.colPos--; }
+    moveRight() { this.colPos++; }
 }
 
 const board = new Board(ctx);
@@ -127,9 +150,26 @@ function drawGame() {
 }
 
 function update() {
-    brick.moveDown();
+    if (!board.collision(brick)) {
+        brick.moveDown();
+    } else {
+        board.merge(brick);
+        score += 10;
+        document.getElementById('score').innerText = score;
+
+        const randomId = Math.floor(Math.random() * brickLayout.length);
+        brick = new Brick(randomId);
+
+        if (board.collision(brick, 0)) {
+            clearInterval(gameInterval);
+            isPlaying = false;
+            alert('Game Over!');
+            return;
+        }
+    }
     drawGame();
 }
+
 
 const playBtn = document.querySelector('.playBtn');
 playBtn.addEventListener('click', () => {
@@ -147,9 +187,18 @@ playBtn.addEventListener('click', () => {
 document.addEventListener('keydown', (e) => {
     if (!isPlaying || !brick) return;
 
-    if (e.key === 'ArrowLeft') brick.moveLeft();
-    else if (e.key === 'ArrowRight') brick.moveRight();
-    else if (e.key === 'ArrowDown') brick.moveDown();
+    if (e.key === 'ArrowLeft') {
+        brick.colPos--;
+        if (board.collision(brick, 0)) brick.colPos++;
+    }
+    else if (e.key === 'ArrowRight') {
+        brick.colPos++;
+        if (board.collision(brick, 0)) brick.colPos--;
+    }
+    else if (e.key === 'ArrowDown') {
+        if (!board.collision(brick)) brick.moveDown();
+    }
 
     drawGame();
 });
+
